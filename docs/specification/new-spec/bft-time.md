@@ -46,11 +46,15 @@ For `MaxValidTime`, we accept blocks where the block time is greater than now
 plus some threshold that increases linearly with the round number.
 `wiggle_r` can be set to 0 if it can be assumed that +2/3 (by voting power) of correct validators'
 clocks are within `wiggle` of each other.
+
 The purpose of `wiggle_r` is for graceful degredation when +2/3 non-Byzantine validators
 *aren't* within `wiggle` of each other but are otherwise correct in all other respects. 
 Consider an example with 100 equally weighted validators, where 33 are Byzantine,
-and one of the remaining 67 validators had a faulty clock that caused it to drift
-back more than `wiggle` from the other 66.
+and one of the remaining 67 validators has a faulty clock that causes it to drift
+back more than `wiggle` from the other 66.  If the 33 Byzantine
+validators were to withhold their votes, no block would produce a Polka until the
+drifting one becomes proposer.
+
 NOTE: `wiggle_r` could be set to something like 0.05, but
 requires more analysis and justification.
 
