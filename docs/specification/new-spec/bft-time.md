@@ -17,7 +17,7 @@ property, but only when signing a prevote for a block:
   now, round) and less than or equal to MaxValidTime(last_block_time, now), where:
 
 ```go
-// wiggle and iota are provided by consensus params.
+// wiggle and iota are provided by consensus config.
 func MinValidTime(last_block_time, now time.Time, round int) time.Time {
 	var minValidTime time.Time = last_block_time.Add(iota)
 	if round == 0 {
@@ -28,7 +28,7 @@ func MinValidTime(last_block_time, now time.Time, round int) time.Time {
 	return minValidTime
 }
 
-// wiggle and wiggle_r are provided by consensus params.
+// wiggle and wiggle_r are provided by consensus config.
 func MaxValidTime(last_block_time, round int) time.Time {
 	return now.
 		Add(wiggle).
@@ -52,8 +52,11 @@ back more than `wiggle` from the other 66.  If the 33 Byzantine
 validators were to withhold their votes, no block would produce a Polka until the
 drifting one becomes proposer. `wiggle_r` can be set to 0 if it can be assumed that +2/3 (by voting power) of correct validators' clocks are within `wiggle` of each other.
 
-NOTE: `wiggle_r` could be set to something like 0.05, but
-requires more analysis and justification.
+NOTE: `wiggle_r` could be set to something like 0.05 (e.g. if `wiggle` were 20s, `wiggle*wiggle_r` would be 1s.)
+`wiggle*wiggle_r` should probably be less than `timeout_propose_delta` to prevent unnecessary
+forward time-jumps in cases where higher rounds are reached due to factors
+other than network performance -- for example, where the network is performant
+but several proposers were absent in a row.
 
 Subjective time validity is ignored when a Polka or Commit is found, allowing
 consensus to progress locally even when the subjective time requirements are not satisfied.
