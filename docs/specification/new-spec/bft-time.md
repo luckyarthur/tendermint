@@ -39,3 +39,6 @@ restriction is that each block time must increment by iota.
 
 For `MaxValidTime`, we accept blocks where the block time is greater than now, but
 linearly with the round number.
+
+Subjective time validity is ignored when a Polka or Commit is found, allowing
+consensus to progress locally even when the subjective time requirements are not satisfied.
