@@ -24,8 +24,8 @@ func MinValidTime(last_block_time, now time.Time, round int) time.Time {
 		minValidTime = maxTime(minValidTime, now.Add(-1*wiggle_dur)
 	} else {
 		// For all subsequent rounds, we accept any block > last_block_time+iota.
-		return minValidTime
 	}
+	return minValidTime
 }
 
 // wiggle_dur and wiggle_r are provided by consensus params.
