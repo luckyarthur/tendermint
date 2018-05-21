@@ -14,7 +14,7 @@ Beyond satisfying time monotinicity, Tendermint also checks the following
 property, but only when signing a prevote for a block:
 
 - **Subjective Time Validity**: Time is greater than MinValidTime(last_block_time,
-  now, round) and less than or equal to MaxValidTime(last_block_time, now, round), where:
+  now, round) and less than or equal to MaxValidTime(last_block_time, now), where:
 
 ```go
 // wiggle_dur and iota are provided by consensus params.
@@ -29,10 +29,10 @@ func MinValidTime(last_block_time, now time.Time, round int) time.Time {
 }
 
 // wiggle_dur and wiggle_r are provided by consensus params.
-func MaxValidTime(last_block_time, now time.Time, round int) time.Time {
+func MaxValidTime(last_block_time, now time.Time) time.Time {
 	return now.
 		Add(wiggle_dur).
-		Add(now.Subtract(last_block_time)*wiggle_r*round)
+		Add(now.Subtract(last_block_time)*wiggle_r)
 }
 ```
 
