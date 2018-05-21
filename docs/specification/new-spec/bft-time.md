@@ -28,7 +28,7 @@ func MinValidTime(last_block_time, now time.Time, round int) time.Time {
 	return minValidTime
 }
 
-// wiggle and wiggle_r is provided by consensus params.
+// wiggle and wiggle_r are provided by consensus params.
 func MaxValidTime(last_block_time, round int) time.Time {
 	return now.
 		Add(wiggle).
@@ -42,15 +42,16 @@ round, as more validator clocks go off sync.  The blockchain's time eventually
 catches up to some "reasonable" time as long as correct validators' proposals are accepted in a timely fashion,
 assuming the same Byzantine tolerance threshold of 1/3.  TODO: Quantify "reasonable".
 
-For `MaxValidTime`, we accept blocks where the block time is greater than now,
+For `MaxValidTime`, we accept blocks where the block time is greater than now
 plus some threshold that increases linearly with the round number.
-Even if `wiggle_r` were equal 0, as long as +2/3 (by voting power) of correct validators'
-clocks are within `wiggle` of each other, it would still work.
-The purpose of `wiggle_r` is for graceful degredation when +2/3 non-malicious validators
-*aren't* within `wiggle` of each other but are otherwise "correct". 
-(Consider an example with 100 equally weighted validators, where 33 are Byzantine,
+`wiggle_r` can be set to 0 if it can be assumed that +2/3 (by voting power) of correct validators'
+clocks are within `wiggle` of each other.
+The purpose of `wiggle_r` is for graceful degredation when +2/3 non-Byzantine validators
+*aren't* within `wiggle` of each other but are otherwise correct in all other respects. 
+Consider an example with 100 equally weighted validators, where 33 are Byzantine,
 and one of the remaining 67 validators had a faulty clock that caused it to drift
-back more than `wiggle`.) NOTE: `wiggle_r` could be set to something like 0.05, but
+back more than `wiggle` from the other 66.
+NOTE: `wiggle_r` could be set to something like 0.05, but
 requires more analysis and justification.
 
 Subjective time validity is ignored when a Polka or Commit is found, allowing
