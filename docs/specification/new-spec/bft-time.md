@@ -14,31 +14,39 @@ Beyond satisfying time monotinicity, Tendermint also checks the following
 property, but only when signing a prevote for a block:
 
 - **Subjective Time Validity**: Time is greater than MinValidTime(last_block_time,
-  now, round) and less than or equal to MaxValidTime(now, round), where:
+  now, round) and less than or equal to MaxValidTime(last_block_time, now, round), where:
 
 ```go
+// wiggle_dur and iota are provided by consensus params.
 func MinValidTime(last_block_time, now time.Time, round int) time.Time {
-	var minValidTime time.Time = last_block_time.Add(iota) // iota provided by consensus params
+	var minValidTime time.Time = last_block_time.Add(iota)
 	if round == 0 {
-		minValidTime = maxTime(minValidTime, now.Subtract(wiggle) // wiggle provided by consensus params
+		minValidTime = maxTime(minValidTime, now.Add(-1*wiggle_dur)
 	} else {
 		// For all subsequent rounds, we accept any block > last_block_time+iota.
 		return minValidTime
 	}
 }
 
-func MaxValidTime(now time.Time, round int) time.Time {
-	return now.Add(wiggle * (round+1))
+// wiggle_dur and wiggle_r are provided by consensus params.
+func MaxValidTime(last_block_time, now time.Time, round int) time.Time {
+	return now.
+		Add(wiggle).
+		Add(now.Subtract(last_block_time)*wiggle_r*round)
 }
 ```
 
-For `MinValidTime`, we only accept recent blocks (i.e. "wiggle") on the first
+For `MinValidTime`, we only accept recent blocks (`wiggle_dur`) on the first
 round.  This has the effect of slowing down the blockchain progressively for 1
 round, as more validator clocks go off sync.  Otherwise, the only remaining
-restriction is that each block time must increment by iota.
+restriction is that each block time must increment by `iota`.  Block time
+eventually catches up to some "reasonable time" as long as correct validators'
+proposals are accepted in a timely fashion.
 
-For `MaxValidTime`, we accept blocks where the block time is greater than now, but
-linearly with the round number.
+For `MaxValidTime`, we accept blocks where the block time is greater than now, where
+the tolerance increases linearly with each round number by ratio `wiggle_r`.
+This prevents the clock from jumping forward too quickly, which cannot be undone
+as the block time must be monotonic.
 
 Subjective time validity is ignored when a Polka or Commit is found, allowing
 consensus to progress locally even when the subjective time requirements are not satisfied.
