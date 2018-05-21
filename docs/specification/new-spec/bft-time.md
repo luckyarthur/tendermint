@@ -8,12 +8,12 @@ Time in Tendermint is defined with the Time field of the block header.
 It satisfies the following property:
 
 - **Time Monotonicity**: Time is monotonically increasing, i.e., given 
-a header H1 for height h1 and a header H2 for height `h2 = h1 + 1`, `H1.Time < H2.Time`. 
+a header H1 for height h1 and a header H2 for height `h2 = h1 + 1`, `H1.Time < H2.Time`.
 
 Beyond satisfying time monotinicity, Tendermint also checks the following
 property, but only when signing a prevote for a block:
 
-- **Temporal Time Validity**: Time is greater than MinValidTime(last_block_time,
+- **Subjective Time Validity**: Time is greater than MinValidTime(last_block_time,
   now, round) and less than or equal to MaxValidTime(now, round), where:
 
 ```go
