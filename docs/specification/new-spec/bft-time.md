@@ -31,7 +31,7 @@ func MinValidTime(last_block_time, now time.Time, round int) time.Time {
 // wiggle_dur and wiggle_r are provided by consensus params.
 func MaxValidTime(last_block_time, now time.Time, round int) time.Time {
 	return now.
-		Add(wiggle).
+		Add(wiggle_dur).
 		Add(now.Subtract(last_block_time)*wiggle_r*round)
 }
 ```
