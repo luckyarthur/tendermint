@@ -37,11 +37,11 @@ func MaxValidTime(last_block_time, round int) time.Time {
 ```
 
 For `MinValidTime`, we only accept recent blocks (`wiggle`) on the first
-round.  This has the effect of slowing down the blockchain (requiring
-at least two rounds of consensus instead of one) as more validator clocks get off sync.
-Blocks that are significantly older than
+round.  This has the effect of slightly slowing down the blockchain (requiring
+at least two rounds of consensus instead of one) progressively as more validator
+clocks get off sync from each other. Blocks that are significantly older than
 `now` can still be valid (except in round 0), which allows for the re-proposing of older proposals.
-The blockchain's time "eventually" catches up to a reasonably recent time as long as
+The blockchain's time "eventually" catches up over block heights to a reasonably recent time as long as
 time-correct validators' proposals are committed in a timely fashion (i.e. less than 1/3
 are Byzantine)  TODO: Quantify "eventually" as a function of % of time-correct
 validators.
