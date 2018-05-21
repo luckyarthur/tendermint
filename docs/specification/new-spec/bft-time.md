@@ -17,36 +17,41 @@ property, but only when signing a prevote for a block:
   now, round) and less than or equal to MaxValidTime(last_block_time, now), where:
 
 ```go
-// wiggle_dur and iota are provided by consensus params.
+// wiggle and iota are provided by consensus params.
 func MinValidTime(last_block_time, now time.Time, round int) time.Time {
 	var minValidTime time.Time = last_block_time.Add(iota)
 	if round == 0 {
-		minValidTime = maxTime(minValidTime, now.Add(-1*wiggle_dur)
+		minValidTime = maxTime(minValidTime, now.Add(-1*wiggle)
 	} else {
 		// For all subsequent rounds, we accept any block > last_block_time+iota.
 	}
 	return minValidTime
 }
 
-// wiggle_dur and wiggle_r are provided by consensus params.
-func MaxValidTime(last_block_time, now time.Time) time.Time {
+// wiggle and wiggle_r is provided by consensus params.
+func MaxValidTime(last_block_time, round int) time.Time {
 	return now.
-		Add(wiggle_dur).
-		Add(now.Subtract(last_block_time)*wiggle_r)
+		Add(wiggle).
+		Add(wiggle*wiggle_r*round)
 }
 ```
 
-For `MinValidTime`, we only accept recent blocks (`wiggle_dur`) on the first
+For `MinValidTime`, we only accept recent blocks (`wiggle`) on the first
 round.  This has the effect of slowing down the blockchain progressively for 1
-round, as more validator clocks go off sync.  Otherwise, the only remaining
-restriction is that each block time must increment by `iota`.  Block time
-eventually catches up to some "reasonable time" as long as correct validators'
-proposals are accepted in a timely fashion.
+round, as more validator clocks go off sync.  The blockchain's time eventually
+catches up to some "reasonable" time as long as correct validators' proposals are accepted in a timely fashion,
+assuming the same Byzantine tolerance threshold of 1/3.  TODO: Quantify "reasonable".
 
-For `MaxValidTime`, we accept blocks where the block time is greater than now, where
-the tolerance increases linearly with each round number by ratio `wiggle_r`.
-This prevents the clock from jumping forward too quickly, which cannot be undone
-as the block time must be monotonic.
+For `MaxValidTime`, we accept blocks where the block time is greater than now,
+plus some threshold that increases linearly with the round number.
+Even if `wiggle_r` were equal 0, as long as +2/3 (by voting power) of correct validators'
+clocks are within `wiggle` of each other, it would still work.
+The purpose of `wiggle_r` is for graceful degredation when +2/3 non-malicious validators
+*aren't* within `wiggle` of each other but are otherwise "correct". 
+(Consider an example with 100 equally weighted validators, where 33 are Byzantine,
+and one of the remaining 67 validators had a faulty clock that caused it to drift
+back more than `wiggle`.) NOTE: `wiggle_r` could be set to something like 0.05, but
+requires more analysis and justification.
 
 Subjective time validity is ignored when a Polka or Commit is found, allowing
 consensus to progress locally even when the subjective time requirements are not satisfied.
